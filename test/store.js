@@ -119,6 +119,26 @@ describe('Store', function(){
       store.save(path, 'username', 'jeff');
       var result = store.delete(path, 'flargdarg');
       result.should.be.false;
+    }),
+    it('should emit delete events', function(){
+      var path = '/abc/def/ghi'
+      store.save(path, 'username', 'jeff');
+      
+      bubblerSpy.reset();
+
+      store.delete(path);
+      bubblerSpy.calledWith(path, 'pre-delete').should.be.true;
+      bubblerSpy.calledWith(path, 'post-delete').should.be.true;
+    }),
+    it('should emit delete events on deleted children', function(){
+      var path = '/abc/def/ghi'
+      store.save(path, 'username', 'jeff');
+      
+      bubblerSpy.reset();
+
+      store.delete('/abc');
+      bubblerSpy.calledWith(path, 'pre-delete').should.be.true;
+      bubblerSpy.calledWith(path, 'post-delete').should.be.true;
     })
   })
 });
