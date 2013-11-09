@@ -61,7 +61,21 @@ describe('Store', function(){
     it('should trim trailing slash on get', function(){
       store.save('/app1/proc1/conn1', 'username', 'jeff');
       should(store.get('/app1/proc1/conn1/')).eql({username: 'jeff'});
-    })
+    }),
+    it('should recursively get objects', function(){
+      store.save('/abc', 'a', 1);
+      store.save('/abc/123', 'b', 2);
+      store.save('/abc/456', 'c', 3);
+
+      should(store.get('/abc', true)).eql({a: 1, '/123': {b:2}, '/456': {c:3}});
+    }),
+    it('should get only this object\'s properties', function(){
+      store.save('/abc', 'a', 1);
+      store.save('/abc/123', 'b', 2);
+      store.save('/abc/456', 'c', 3);
+
+      should(store.get('/abc', false)).eql({a: 1});
+    }) // what about a field named the same as a child path?
   }),
   describe('#exists', function(){
     it('should know real keys exist.', function(){
