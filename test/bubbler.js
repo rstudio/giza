@@ -8,32 +8,31 @@ describe('Bubbler', function(){
   }),
   it('properly subscribes and emits on a particular node.', function(done){
     var obj = {a:1};
-    bub.subscribe('/abc/def', false, function(data){
+    bub.subscribe('/abc/def', function(data, source){
+      should(source).equal('/abc/def');
       should(data).equal(obj);
       done();
-    });
+    }, false);
     bub.emit('/abc/def', obj);
   }),
   it('replaces trailing slash on subscribe', function(done){
     var obj = {a:1};
-    bub.subscribe('/abc/def/', false, function(data){
+    bub.subscribe('/abc/def/', function(data, source){
       should(data).equal(obj);
       done();
-    });
+    }, false);
     bub.emit('/abc/def', obj);
   }),
   it('replaces trailing slash on emit', function(done){
     var obj = {a:1};
-    bub.subscribe('/abc/def', false, function(data){
-      should(data).equal(obj);
+    bub.subscribe('/abc/def', function(){
       done();
-    });
+    }, false);
     bub.emit('/abc/def/', obj);
   }),
   it('bubbles events upwards.', function(done){
     var obj = {a:1};
-    bub.subscribe('/abc', true, function(data){
-      should(data).equal(obj);
+    bub.subscribe('/abc', function(){
       done();
     });
     bub.emit('/abc/def/', obj);
@@ -42,18 +41,19 @@ describe('Bubbler', function(){
     setTimeout(done, 100);
 
     var obj = {a:1};
-    bub.subscribe('/abc', false, function(data){
+    bub.subscribe('/abc', function(data){
       done(new Error("Bubbled event when it shouldn't have."));
-    });
+    }, false);
     bub.emit('/abc/def/', obj);
   }),
   it('bubbles events to root.', function(done){
     var obj = {a:1};
-    bub.subscribe('/', true, function(data){
+    bub.subscribe('/', function(data, source){
+      source.should.equal('/abc/def');
       should(data).equal(obj);
       done();
-    });
-    bub.emit('/abc/def/', obj);
+    }, true);
+    bub.emit('/abc/def', obj);
   }),
   it('pub/subs 100k targeted events in less than 200ms', function(done){
     // this.timeout doesn't seem to be working. Implement our own.
@@ -61,9 +61,9 @@ describe('Bubbler', function(){
 
     var counter = 0;
     var obj = {a:1};
-    bub.subscribe('/abc', false, function(data){
+    bub.subscribe('/abc', function(){
       counter++;
-    });    
+    }, false);
 
     var iterations = 100000;
 
@@ -84,9 +84,9 @@ describe('Bubbler', function(){
 
     var counter = 0;
     var obj = {a:1};
-    bub.subscribe('/', true, function(data){
+    bub.subscribe('/', function(){
       counter++;
-    });
+    }, true);
 
     var iterations = 100000;
 
