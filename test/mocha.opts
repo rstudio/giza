@@ -1,3 +1,4 @@
 --require should
 --require ./lib/core/log.js
 --reporter spec
+--recursive
