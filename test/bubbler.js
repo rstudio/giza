@@ -1,10 +1,10 @@
-var Bubbly = require('../lib/main');
+var Bubbler = require('../lib/bubbler/bubbler');
 var should = require('should');
 var bub;
 
 describe('Bubbler', function(){
   beforeEach(function(){
-    bub = new Bubbly();
+    bub = new Bubbler();
   }),
   it('properly subscribes and emits on a particular node.', function(done){
     var obj = {a:1};
