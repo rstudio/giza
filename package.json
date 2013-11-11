@@ -1,12 +1,12 @@
 {
-  "name": "bubbly",
+  "name": "giza",
   "version": "0.1.0",
   "author": "Jeff Allen <jeff@trestletech.com>",
   "description": "",
   "bin": "./lib/main.js",  
   "repository": {
     "type": "git",
-    "url": "https://github.com/trestletech/bubbly.git"
+    "url": "https://github.com/trestletech/giza.git"
   },
   "dependencies" : {
     "underscore"        :  "1.5.2",
