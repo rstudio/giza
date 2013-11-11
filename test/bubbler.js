@@ -100,5 +100,12 @@ describe('Bubbler', function(){
     // Keep v8 from ever outsmarting this test and skipping over the loop.
     counter.should.equal(iterations);
     done();
-  });
+  })
+  it('clears subscriptions', function(){
+    var obj = {a:1};
+    bub.subscribe('/abc', function(){ });
+    bub.$eventBus.listeners('/abc').length.should.equal(1);
+    bub.clearSubscriptions('/abc');
+    bub.$eventBus.listeners('/abc').length.should.equal(0);
+  })
 });

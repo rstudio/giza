@@ -6,11 +6,13 @@ var Passthrough = require('../lib/assemblers/passthrough');
 
 var bub;
 var bubblerSpy = sinon.spy();
+var clearSpy = sinon.spy();
 
 describe('Store', function(){
   beforeEach(function(){
     bubblerSpy.reset();
-    store = new Store({emit: bubblerSpy}, {'_': new Passthrough()});    
+    store = new Store({emit: bubblerSpy, clearSubscriptions: clearSpy}, 
+      {'_': new Passthrough()});    
   }),
   describe('#save', function(){
     it('should trim trailing slash on save', function(){
@@ -251,7 +253,12 @@ describe('Store', function(){
       store.delete('/app1');
       should(store.getType(path)).equal(undefined);
     }),
-    it('deregisters callbacks when deleting a node')
+    it('deregisters subscriptions/triggers when deleting a node', function(){
+      var path = '/app1/proc1';
+      store.save(path, {username: 'jeff'});
+      store.delete(path);
+      clearSpy.calledWith(path).should.be.true;
+    })
   }),
   describe('#addTrigger', function(){
     it('throws on non-existent paths', function(){
