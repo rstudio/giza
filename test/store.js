@@ -1,4 +1,5 @@
 var Store = require('../lib/store/store');
+var Bubbler = require('../lib/bubbler/bubbler');
 var should = require('should');
 var sinon = require('sinon');
 var Passthrough = require('../lib/assemblers/passthrough');
@@ -157,6 +158,36 @@ describe('Store', function(){
       });  
       myStore.save('/abc', {a: 1}, 'user');
       should(myStore.get('/abc', {type: 'group'})).eql({a : 1});
+    }),
+    it('ignores computed data if instructed', function(){
+      var myStore = new Store(new Bubbler(), {'_': new Passthrough()});
+      var path = '/app1/proc1';
+      myStore.save(path, {username: 'jeff'});
+      myStore.addTrigger(path, 'logins', function(event, source){
+        return 16;
+      });
+      myStore.save(path);
+      should.not.exist(myStore.get(path, {computed: false}).logins);
+    }),
+    it('supplements local object with computed data', function(){
+      var myStore = new Store(new Bubbler(), {'_': new Passthrough()});
+      var path = '/app1/proc1';
+      myStore.save(path, {username: 'jeff'});
+      myStore.addTrigger(path, 'logins', function(event, source){
+        return 16;
+      });
+      myStore.save(path);
+      myStore.get(path).logins.should.equal(16);
+    }),
+    it('supplements recursive objects with computed data', function(){
+      var myStore = new Store(new Bubbler(), {'_': new Passthrough()});
+      var path = '/app1/proc1';
+      myStore.save(path, {username: 'jeff'});
+      myStore.addTrigger(path, 'logins', function(event, source){
+        return 16;
+      });
+      myStore.save(path);
+      myStore.get('/app1', {recursive: true})['/proc1'].logins.should.equal(16);
     })
   }),
   describe('#exists', function(){
@@ -219,6 +250,78 @@ describe('Store', function(){
       store.save(path, {username: 'jeff'}, 'user');
       store.delete('/app1');
       should(store.getType(path)).equal(undefined);
+    }),
+    it('deregisters callbacks when deleting a node')
+  }),
+  describe('#addTrigger', function(){
+    it('throws on non-existent paths', function(){
+      var myStore = new Store(new Bubbler(), {'_': new Passthrough()});
+
+      var path = '/app1/proc1';
+      (function(){
+        myStore.addTrigger(path, 'logins', function(event, source){
+          clearTimeout(timeout);
+          done();
+        });
+      }).should.throw();      
+    }),
+    it('calls back on local events', function(done){
+      var timeout = setTimeout(done, 100, new Error("Timeout"));
+      
+      var myStore = new Store(new Bubbler(), {'_': new Passthrough()});
+      var path = '/app1/proc1';
+      var firstCall = true;
+      myStore.save(path, {username: 'jeff'});
+      myStore.addTrigger(path, 'logins', function(event, source){
+        clearTimeout(timeout);
+        if (firstCall){
+          firstCall = false;
+          done(); // done doesn't like to be called multiple times.
+        }
+      });
+      myStore.save(path);
+    }),
+    it('calls back on bubbled events', function(done){
+      var timeout = setTimeout(done, 100, new Error("Timeout"));
+      
+      var myStore = new Store(new Bubbler(), {'_': new Passthrough()});
+      var path = '/app1/proc1';
+      var firstCall = true;
+      myStore.save(path + '/conn1', {username: 'jeff'});
+      myStore.save(path, {pid: 123});
+      myStore.addTrigger(path, 'logins', function(event, source){
+        clearTimeout(timeout);
+        if (firstCall){
+          firstCall = false;
+          done(); // done doesn't like to be called multiple times.
+        }
+      });
+      myStore.save(path+'/conn1');
+    }),
+    it('properly uses "thisArg"', function(done){
+      var timeout = setTimeout(done, 100, new Error("Timeout"));
+      
+      var myStore = new Store(new Bubbler(), {'_': new Passthrough()});
+      var path = '/app1/proc1';
+      var firstCall = true;
+      var obj = {a : 15};
+      myStore.save(path, {username: 'jeff'});
+      myStore.addTrigger(path, 'logins', function(event, source){
+        clearTimeout(timeout);
+        if (firstCall){
+          this.a.should.equal(15);
+          firstCall = false;
+          done(); // done doesn't like to be called multiple times.
+        }
+      }, obj);
+      myStore.save(path);
+    }),
+    it('throws on slash-prefixed names', function(){
+      var myStore = new Store(new Bubbler(), {'_': new Passthrough()});
+      var path = '/app1/proc1';      
+      (function(){
+        myStore.addTrigger(path, '/logins', function(event, source){});
+      }).should.throw();
     })
   })
 });
