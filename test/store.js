@@ -48,14 +48,14 @@ describe('Store', function(){
       bubblerSpy.calledWith(path, 'pre-create').should.be.false;
       bubblerSpy.calledWith(path, 'pre-update').should.be.true;
     }),
-    it('emits post-create event', function(){
+    it('emits create event', function(){
       var path = '/app1/proc1/conn1'
       store.save(path, {username: 'jeff'});
       bubblerSpy.called.should.be.true;
-      bubblerSpy.calledWith(path, 'post-create').should.be.true;
-      bubblerSpy.calledWith(path, 'post-update').should.be.true;
+      bubblerSpy.calledWith(path, 'create').should.be.true;
+      bubblerSpy.calledWith(path, 'update').should.be.true;
     }),
-    it('emits post-update event', function(){
+    it('emits update event', function(){
       var path = '/app1/proc1/conn1';
       store.save(path, {username: 'jeff'});
       
@@ -63,8 +63,8 @@ describe('Store', function(){
 
       store.save(path, {username: 'jeff'});
       bubblerSpy.called.should.be.true;
-      bubblerSpy.calledWith(path, 'post-create').should.be.false;
-      bubblerSpy.calledWith(path, 'post-update').should.be.true;
+      bubblerSpy.calledWith(path, 'create').should.be.false;
+      bubblerSpy.calledWith(path, 'update').should.be.true;
     }),
     it('properly stores type', function(){
       var path = '/app1/proc1/conn1'
@@ -190,6 +190,13 @@ describe('Store', function(){
       });
       myStore.save(path);
       myStore.get('/app1', {recursive: true})['/proc1'].logins.should.equal(16);
+    }),
+    it('doesn\'t remove prototyped properties', function(){
+      var path = '/app1/proc1/conn1';
+      var Something = function(){};
+      Something.prototype.variable = "hello";
+      store.save(path, new Something());
+      should(store.get('/app1/proc1/conn1')).eql({variable: 'hello'});
     })
   }),
   describe('#exists', function(){
@@ -229,7 +236,7 @@ describe('Store', function(){
 
       store.delete(path);
       bubblerSpy.calledWith(path, 'pre-delete').should.be.true;
-      bubblerSpy.calledWith(path, 'post-delete').should.be.true;
+      bubblerSpy.calledWith(path, 'delete').should.be.true;
     }),
     it('should emit delete events on deleted children', function(){
       var path = '/abc/def/ghi'
@@ -239,7 +246,7 @@ describe('Store', function(){
 
       store.delete('/abc');
       bubblerSpy.calledWith(path, 'pre-delete').should.be.true;
-      bubblerSpy.calledWith(path, 'post-delete').should.be.true;
+      bubblerSpy.calledWith(path, 'delete').should.be.true;
     }),
     it('deletes type of associated objects', function(){
       var path = '/app1/proc1/conn1'

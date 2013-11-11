@@ -1,4 +1,4 @@
-var Blacklist = require('../../lib/assemblers/Blacklist');
+var Blacklist = require('../../lib/assemblers/blacklist');
 var should = require('should');
 
 describe('Blacklist', function(){
