@@ -2,14 +2,18 @@ var Bubbler = require('../lib/bubbler/bubbler');
 var should = require('should');
 var bub;
 
+var TYPE = 'TYPE';
+var OBJ = {obj: 'myObj'};
+var MOCK_STORE = {getType: function(){return TYPE;}, get: function(){return OBJ;}};
+
 describe('Bubbler', function(){
   beforeEach(function(){
-    bub = new Bubbler();
+    bub = new Bubbler(MOCK_STORE);
   }),
   it('properly subscribes and emits on a particular node.', function(done){
     var obj = {a:1};
     bub.subscribe('/abc/def', function(data, source){
-      should(source).equal('/abc/def');
+      source.should.eql({path: '/abc/def', obj: OBJ, type: TYPE});
       should(data).equal(obj);
       done();
     }, false);
@@ -49,7 +53,7 @@ describe('Bubbler', function(){
   it('bubbles events to root.', function(done){
     var obj = {a:1};
     bub.subscribe('/', function(data, source){
-      source.should.equal('/abc/def');
+      source.should.eql({path: '/abc/def', obj: OBJ, type: TYPE});
       should(data).equal(obj);
       done();
     }, true);
@@ -72,7 +76,9 @@ describe('Bubbler', function(){
     }
 
     // We made it in time. Clear the timeout
-    clearTimeout(timeout);
+    setTimeout(function(){
+      clearTimeout(timeout);
+    }, 5);
 
     // Keep v8 from ever outsmarting this test and skipping over the loop.
     counter.should.equal(iterations);
@@ -95,17 +101,29 @@ describe('Bubbler', function(){
     }
 
     // We made it in time. Clear the timeout
-    clearTimeout(timeout);
+    setTimeout(function(){
+      clearTimeout(timeout);
+    }, 5);
 
     // Keep v8 from ever outsmarting this test and skipping over the loop.
     counter.should.equal(iterations);
     done();
   })
   it('clears subscriptions', function(){
-    var obj = {a:1};
     bub.subscribe('/abc', function(){ });
     bub.$eventBus.listeners('/abc').length.should.equal(1);
     bub.clearSubscriptions('/abc');
     bub.$eventBus.listeners('/abc').length.should.equal(0);
+  }),
+  it('Passed emitted arguments through', function(done){
+    var obj = {a:1};
+    bub.subscribe('/abc', function(){
+      arguments[0].should.equal('event');
+      arguments[1].should.eql({path: '/abc/def', obj: OBJ, type: TYPE});
+      arguments[2].should.equal(obj);
+      arguments[3].should.equal(15);
+      done();
+    });
+    bub.emit('/abc/def', 'event', obj, 15);    
   })
 });

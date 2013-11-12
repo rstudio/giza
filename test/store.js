@@ -282,7 +282,7 @@ describe('Store', function(){
     it('calls back on local events', function(done){
       var timeout = setTimeout(done, 100, new Error("Timeout"));
       
-      var myStore = new Store(new Bubbler(), {'_': new Passthrough()});
+      var myStore = new Store(new Bubbler(), {'_': new Passthrough()});      
       var path = '/app1/proc1';
       var firstCall = true;
       myStore.save(path, {username: 'jeff'});
