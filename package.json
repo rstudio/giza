@@ -2,7 +2,7 @@
   "name": "giza",
   "version": "0.1.0",
   "author": "Jeff Allen <jeff@trestletech.com>",
-  "description": "",
+  "description": "A hierarchical data storage system with bubbling publish-subscribe.",
   "main": "./lib/main.js",
   "repository": {
     "type": "git",

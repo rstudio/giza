@@ -16,7 +16,7 @@ describe('Bubbler', function(){
       source.should.eql({path: '/abc/def', obj: OBJ, type: TYPE});
       should(data).equal(obj);
       done();
-    }, false);
+    }, {bubble: false});
     bub.emit('/abc/def', obj);
   }),
   it('replaces trailing slash on subscribe', function(done){
@@ -24,14 +24,14 @@ describe('Bubbler', function(){
     bub.subscribe('/abc/def/', function(data, source){
       should(data).equal(obj);
       done();
-    }, false);
+    }, {bubble: false});
     bub.emit('/abc/def', obj);
   }),
   it('replaces trailing slash on emit', function(done){
     var obj = {a:1};
     bub.subscribe('/abc/def', function(){
       done();
-    }, false);
+    }, {bubble: false});
     bub.emit('/abc/def/', obj);
   }),
   it('bubbles events upwards.', function(done){
@@ -41,13 +41,44 @@ describe('Bubbler', function(){
     });
     bub.emit('/abc/def/', obj);
   }),
+  it('doesn\'t fire on an excluded type, bubbled event.', function(done){
+    var timeout = setTimeout(done, 100);
+
+    bub.subscribe('/abc', function(){
+      clearTimeout(timeout);
+      done(new Error("Didn't properly exclude bubbled event."));  
+    }, {types: ['type1', 'type2']});
+    bub.emit('/abc/def');
+  }),
+  it('does fire on an included type, bubbled event.', function(done){
+    bub.subscribe('/abc', function(){
+      done();
+    }, {types: ['type1', TYPE]});
+    bub.emit('/abc/def');
+  }),
+  it('doesn\'t fire on an excluded type, targeted event.', function(done){
+    var timeout = setTimeout(done, 100);
+
+    bub.subscribe('/abc', function(){
+      clearTimeout(timeout);
+      done(new Error("Didn't properly exclude targeted event."));  
+    }, {types: ['type1', 'type2']});
+    bub.emit('/abc');   
+  }),
+  it('does fire on an included type, targeted event.', function(done){
+    bub.subscribe('/abc', function(){
+      done();
+    }, {types: ['type1', TYPE]});
+    bub.emit('/abc');
+  }),
   it('skips bubbled events if not subscribed', function(done){
-    setTimeout(done, 100);
+    var timeout = setTimeout(done, 100);
 
     var obj = {a:1};
     bub.subscribe('/abc', function(data){
+      clearTimeout(timeout);
       done(new Error("Bubbled event when it shouldn't have."));
-    }, false);
+    }, {bubble: false});
     bub.emit('/abc/def/', obj);
   }),
   it('bubbles events to root.', function(done){
@@ -56,7 +87,7 @@ describe('Bubbler', function(){
       source.should.eql({path: '/abc/def', obj: OBJ, type: TYPE});
       should(data).equal(obj);
       done();
-    }, true);
+    }, {bubble: true});
     bub.emit('/abc/def', obj);
   }),
   it('pub/subs 100k targeted events in less than 200ms', function(done){
@@ -67,7 +98,7 @@ describe('Bubbler', function(){
     var obj = {a:1};
     bub.subscribe('/abc', function(){
       counter++;
-    }, false);
+    }, {bubble: false});
 
     var iterations = 100000;
 
@@ -92,7 +123,7 @@ describe('Bubbler', function(){
     var obj = {a:1};
     bub.subscribe('/', function(){
       counter++;
-    }, true);
+    }, {bubble: true});
 
     var iterations = 100000;
 
