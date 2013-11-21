@@ -27,10 +27,15 @@ describe('Bubbler', function(){
       bub.emit('/abc/def/', obj);
     }),
     it('clears subscriptions', function(){
-      bub.subscribe('/abc', function(){ });
+      bub.subscribe('/abc', function(){ return 2; });
+      _.size(bub.$callbacks).should.equal(1);
       bub.$eventBus.listeners('/abc').length.should.equal(1);
+      bub.$bubbleBus.listeners('/abc').length.should.equal(1);
+      
       bub.clearSubscriptions('/abc');
+      _.size(bub.$callbacks).should.equal(0);
       bub.$eventBus.listeners('/abc').length.should.equal(0);
+      bub.$bubbleBus.listeners('/abc').length.should.equal(0);
     }),
     it('Passed emitted arguments through', function(done){
       var obj = {a:1};
@@ -195,6 +200,37 @@ describe('Bubbler', function(){
   }),
   describe("#matchFilter", function(){
 
+  }),
+  describe('#unsubscribe', function(){
+    it('unsubscribes callback on both event busses', function(){
+      var bubbler = new Bubbler(MOCK_STORE);
+      var callback = function(){ return 1; };
+      var path = '/abc';
+
+      bubbler.$eventBus.listeners(path).length.should.equal(0);
+
+      bubbler.subscribe(path, callback);
+
+      bubbler.$eventBus.listeners(path).length.should.equal(1);
+
+      bubbler.unsubscribe(path, callback);
+
+      bubbler.$eventBus.listeners(path).length.should.equal(0);
+    }),
+    it('deletes tracked callback on unsubscribe', function(){
+      var bubbler = new Bubbler(MOCK_STORE);
+      var callback = function(){ return 1; };
+      var path = '/abc';
+
+      bubbler.subscribe(path, callback);
+
+      _.size(bubbler.$callbacks).should.equal(1);
+
+      bubbler.unsubscribe(path, callback);
+
+      _.size(bubbler.$callbacks).should.equal(0);
+
+    })
   })
   
   
