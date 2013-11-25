@@ -35,7 +35,7 @@ describe('Store', function(){
       store.save(path, {username: 'jeff'});
       bubblerSpy.called.should.be.true;
       bubblerSpy.calledWith(path, 'pre-create').should.be.true;
-      bubblerSpy.calledWith(path, 'pre-update').should.be.true;
+      bubblerSpy.calledWith(path, 'pre-update').should.be.false;
     }),
     it('emits pre-update event', function(){
       var path = '/app1/proc1/conn1'
@@ -53,7 +53,7 @@ describe('Store', function(){
       store.save(path, {username: 'jeff'});
       bubblerSpy.called.should.be.true;
       bubblerSpy.calledWith(path, 'create').should.be.true;
-      bubblerSpy.calledWith(path, 'update').should.be.true;
+      bubblerSpy.calledWith(path, 'update').should.be.false;
     }),
     it('emits update event', function(){
       var path = '/app1/proc1/conn1';
@@ -70,6 +70,38 @@ describe('Store', function(){
       var path = '/app1/proc1/conn1'
       store.save(path, {username: 'jeff'}, 'user');
       store.getType(path).should.equal('user');
+    }),
+    it('emits current value with update, if any', function(){
+      var path = '/app1/proc1/conn1';
+      var obj = {username: 'jeff'};
+      store.save(path, obj);
+      
+      bubblerSpy.reset();
+
+      var obj2 = {user2: 'test'};
+      store.save(path, obj2);
+      bubblerSpy.called.should.be.true;
+      bubblerSpy.calledWith(path, 'pre-update', undefined, obj).should.be.true;
+      bubblerSpy.calledWith(path, 'update', undefined, obj).should.be.true;
+    })
+  }),
+  describe('#find', function(){
+    it('properly filters by type array', function(){
+      store.save('/abc/a', {a: 1}, 'type1');
+      store.save('/abc/b', {b: 2}, 'type2');
+      store.save('/abc/c', {c: 3}, 'type3');
+      should(store.find({types: ['type2', 'type3']})).eql({
+        '/abc/b' : {b:2},
+        '/abc/c' : {c:3}
+      });
+    }),
+    it('properly filters by single type', function(){
+      store.save('/abc/a', {a: 1}, 'type1');
+      store.save('/abc/b', {b: 2}, 'type2');
+      store.save('/abc/c', {c: 3}, 'type3');
+      should(store.find({types: 'type2'})).eql({
+        '/abc/b' : {b:2}        
+      });
     })
   }),
   describe('#get', function(){
@@ -77,7 +109,7 @@ describe('Store', function(){
       var path = '/app1/proc1/conn1';
       store.save(path, {username: 'jeff'});
       should(store.get('/app1/proc1/conn1')).eql({username: 'jeff'});
-    }),    
+    }),
     it('should trim trailing slash on get', function(){
       var path = '/app1/proc1/conn1';
       store.save(path, {username: 'jeff'});
