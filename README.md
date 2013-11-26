@@ -12,6 +12,8 @@ These features are each described in greater detail below and form the backbone 
 
 ## Installation & Usage
 
+**Giza is in very early development and the API is subject to change!**
+
 Giza can be installed using the following command:
 
 ```
