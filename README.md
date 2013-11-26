@@ -27,6 +27,18 @@ var giza = new Giza(); // Instantiate a new Giza instance.
 
 This `giza` variable can then either be passed around or loaded into the global environment, as is appropriate.
 
+## Architecture
+
+### Data Typing
+
+TODO
+
+### Data Organization
+
+TODO
+
+Children prefaced with `/`
+
 ## Features
 
 ### Data Storage
@@ -35,27 +47,42 @@ Data in Giza is stored in a hierarchical model, using paths separated by forward
 
 #### `save(path, val, type)`
 
- - `path` - 
- - `val` - 
- - `type` - 
+Saves an object into Giza
+
+ - `path` - The path (address) at which the incoming object should be saved.
+ - `val` - The object to save.
+ - `type` - (Optional) - The string name of the "class" or "type" to associate with this object. See [Data Typing](https://github.com/trestletech/giza#data-typing).
 
 #### `get(path, options)`
 
- - `path` - 
- - `options` - 
+Gets an object out of Giza.
 
- #### `delete(path)`
+ - `path` - The path (address) of the object to retrieve.
+ - `options` - (Optional) - A map with any of the following properties:
+   - `recursive` - `false` - Whether or not to get the entire tree under this path. If true, will get this object and all children, if false will just get this object. See [Data Organization](https://github.com/trestletech/giza#data-organization) to understand how the object will be structured if this is true.
+   - `includeComputed` - `true` - If true, will include the values computed by triggers associated with this path, if false, will omit them.
+   - `assembler` - Override the default assembler associated with data of whatever type this object is and use the provided assembler instead to serialize the data.
+   - `callback` - Convenient way to register a callback while getting data. Just handles the registry of this callback function using `subscribe()` on this path, inherting the `recursive` property you defined here, if any. 
 
- - `path` - 
+#### `delete(path)`
+
+Delete an object and all associated callbacks from Giza.
+
+ - `path` - The path (address) of the object to delete.
  
- #### `exists(path)`
+#### `exists(path)`
 
- - `path` - 
+Determine whether or not a path exists in Giza.
 
- #### `find(filter, options)`
+ - `path` - The path (address) of the object to investigate.
 
- - `filter` - 
- - `options` -  
+#### `find(filter, options)`
+
+Find all objects in Giza which match the provided filter. Currently only supports filtering based on object type. Returns a map of objects which passed the filter indexed by their path.
+
+ - `filter` - An object with any of the following fields:
+   - `types` - A string (or array of strings) specifying the types of data which should be included in the returned map.
+ - `options` -  Options passed into the `get` call used to retrieve each matching object.
 
 ### Publish/Subscribe
 
@@ -67,9 +94,33 @@ There are three primary functions that will be used to emit or subscribe to even
 
 #### `subscribe(path, callback, options)`
 
+Add a subscription to a particular path, optionally on only certain types of events.
+
+ - `path` - The path on which to subscribe.
+ - `callback` - The function to execute when a matching event is emitted on this object. The callback will be executed with the following signature:
+   - `event` - The name of the event emitted.
+   - `source` - An object typically containing (at least) three fields detailing the source of the event that was emitted.
+     - `path` -  The path associated with the original event
+     - `obj` -  The object on which the original event was emitted
+     - `type` - The "type" associated with the original object
+   - `...` - Any other arguments passed into the `emit` call.
+ - `options` - A map containing any of the following fields:
+   - `bubble` - `true` - If true, will also subscribe on all events bubbling to/past this object. If false, will only emit on events targetting this particular node.
+   - `filters` - N/A - An array of objects specifying the filters associated with this subscription. If provided, only events which match these filters will execute the callback. If the emitted event matches any of the filters in this array, it will be passed through. The objects can have the following properties
+     - `names` - A string or array of strings specifying the event name(s) which should be included in this filter. If empty, will allow all names through.
+     - `types` - A string or array of strings specifying the origin object type(s) which should be included in this filter. Events targetting objects of a type not included in this string/array will be excluded. If empty, will allow all types through.
+   - `triggered` - `true` - If true, will include triggered events in the subscription. If false, will not fire on events originating from a trigger.
+
 #### `emit(path, event, ...)`
 
+ - `path` - The path on which we should emit
+ - `event` - The name of the event to emit.
+ - `...` - Any other arguments which will be passed into all `subscribe` callbacks.
+
 #### `unsubscribe(path, callback)`
+
+ - `path` - 
+ - `callback` -  
 
 Note that you can also register a subscription when `get`ting data using the `callback` option.
 
@@ -130,4 +181,6 @@ Triggers are added using the `addTrigger()` function.
 
 ## Development
 
-mocha
+TODO
+
+ - mocha
