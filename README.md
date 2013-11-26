@@ -31,13 +31,47 @@ This `giza` variable can then either be passed around or loaded into the global 
 
 ### Data Typing
 
-TODO
+The notion of "types" is very loose in Giza. Types can be thought of as a character "tag" which can be associated with an object, but has no ability to enforce, restrict, or require any qualities or properties of the object. Types are primarily provided for the following reasons:
+
+ 1. In the short term, types are used to help guide Giza regarding how an object should be serialized (i.e. which assembler should be used) or to filter to a particular type of object. Where possible, the type of data is returned alongside an object (not as an attribute of the object, but in another channel) to avoid altering the underlying object.
+ 2. In the long-term, it may be possible to leverage data types to persist data in Giza into another system like MongoDB.
+
+We're very open to input currently regarding how typing should be configured in Giza. We've intentionally left a lot of flexibility so we can later hone in exactly how we want it to work.
 
 ### Data Organization
 
-TODO
+Data retrieved from Giza will be returned in a hierarchical format corresponding to the path locations at which the data was stored. Objects stored in Giza will, where possible, remain unaltered. Meaning that we strive to make the following cycle idempotent.
 
-Children prefaced with `/`
+```
+var obj = {a:1, b:2};
+giza.save('/path', obj)
+obj = giza.get('/path')
+```
+
+We do this by keeping the attributes of the object as "first-class citizens" of the returned object, so that `obj.a` returns `1` both before and after storing the object in Giza.
+
+However, this gets complicated when we attempt to recursively pull a tree of objects in from Giza, as we need to distinguish properties of an object (like `a` and `b` above) from children. To facilitate this, we preface all children with a forward slash. So you can expect the following:
+
+```
+var obj = {a:1, b:2};
+giza.save('/path', obj);
+giza.save('path/a', {c : 1});
+giza.get('/path/a');
+```
+
+would return:
+
+```
+{
+  'a' : 1,
+  'b' : 2,
+  '/a' : {
+    'c' : 1
+  }
+}
+```
+
+In general, it will be easier to use the `find` and `get` commands to traverse trees of objects rather than traversing the trees returned from a call to `get` yourself. But if it needs to be done, you can expect this convention to be applied constently when returning objects recursively from Giza.
 
 ## Features
 
@@ -119,8 +153,10 @@ Add a subscription to a particular path, optionally on only certain types of eve
 
 #### `unsubscribe(path, callback)`
 
- - `path` - 
- - `callback` -  
+Unsubscribe a callback which is currently registered.
+
+ - `path` - The path with which the callback is registered
+ - `callback` -  The callback which should be unsubscribed.
 
 Note that you can also register a subscription when `get`ting data using the `callback` option.
 
