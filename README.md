@@ -27,6 +27,10 @@ var giza = new Giza(); // Instantiate a new Giza instance.
 
 This `giza` variable can then either be passed around or loaded into the global environment, as is appropriate.
 
+## Example/Demo
+
+Examples are maintained in [this repository](https://github.com/trestletech/giza-example).
+
 ## Architecture
 
 ### Data Typing
