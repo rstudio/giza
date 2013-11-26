@@ -59,8 +59,8 @@ However, this gets complicated when we attempt to recursively pull a tree of obj
 ```
 var obj = {a:1, b:2};
 giza.save('/path', obj);
-giza.save('path/a', {c : 1});
-giza.get('/path/a');
+giza.save('/path/a', {c : 1});
+giza.get('/path');
 ```
 
 would return:
