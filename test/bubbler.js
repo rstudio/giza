@@ -13,11 +13,12 @@ describe('Bubbler', function(){
   describe("General Pub/Sub", function(){
     it('replaces trailing slash on subscribe', function(done){
       var obj = {a:1};
-      bub.subscribe('/abc/def/', function(data, source){
+      bub.subscribe('/abc/def/', function(event, source, data){
+        event.should.equal('event1');
         should(data).equal(obj);
         done();
       }, {bubble: false});
-      bub.emit('/abc/def', obj);
+      bub.emit('/abc/def', 'event1', obj);
     }),
     it('replaces trailing slash on emit', function(done){
       var obj = {a:1};
@@ -41,7 +42,7 @@ describe('Bubbler', function(){
       var obj = {a:1};
       bub.subscribe('/abc', function(){
         arguments[0].should.equal('event');
-        arguments[1].should.eql({path: '/abc/def', obj: OBJ, type: TYPE});
+        arguments[1].should.eql({path: '/abc/def', triggered: false, obj: OBJ, type: TYPE});
         arguments[2].should.equal(obj);
         arguments[3].should.equal(15);
         done();
@@ -52,12 +53,13 @@ describe('Bubbler', function(){
   describe("Targeted Pub/Sub", function(){
     it('properly subscribes and emits on a particular node', function(done){
       var obj = {a:1};
-      bub.subscribe('/abc/def', function(data, source){
-        source.should.eql({path: '/abc/def', obj: OBJ, type: TYPE});
+      bub.subscribe('/abc/def', function(event, source, data){
+        event.should.equal('event1');
+        source.should.eql({path: '/abc/def', triggered: false, obj: OBJ, type: TYPE});
         should(data).equal(obj);
         done();
       }, {bubble: false});
-      bub.emit('/abc/def', obj);
+      bub.emit('/abc/def', 'event1', obj);
     }),
     it('doesn\'t fire on an excluded type, targeted event', function(done){
       var timeout = setTimeout(done, 100);
@@ -165,12 +167,12 @@ describe('Bubbler', function(){
     }),
     it('bubbles events to root.', function(done){
       var obj = {a:1};
-      bub.subscribe('/', function(data, source){
-        source.should.eql({path: '/abc/def', obj: OBJ, type: TYPE});
+      bub.subscribe('/', function(event, source, data){
+        source.should.eql({path: '/abc/def', triggered: false, obj: OBJ, type: TYPE});
         should(data).equal(obj);
         done();
       }, {bubble: true});
-      bub.emit('/abc/def', obj);
+      bub.emit('/abc/def', 'event1', obj);
     }),
     it('pub/subs 100k (5-lvl) bubbled events in less than 500ms', function(done){
       // this.timeout doesn't seem to be working. Implement our own.

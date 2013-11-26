@@ -368,19 +368,6 @@ describe('Store', function(){
       (function(){
         myStore.addTrigger(path, '/logins', function(event, source){});
       }).should.throw();
-    }),
-    it('properly updates underlying data', function(){
-      var myStore = new Store(new Bubbler(), {'_': new Passthrough()});      
-      var path = '/app1/proc1';
-      var firstCall = true;
-      myStore.save(path, {username: 'jeff'});
-      myStore.addTrigger(path, 'logins', function(event, source){
-        return "test";
-      });
-      myStore.save(path);
-
-      var obj = myStore.get(path);
-      obj.logins.should.equal("test");
     })
   })
 });
