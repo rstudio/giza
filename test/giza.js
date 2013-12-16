@@ -1,4 +1,4 @@
-var Giza = require('../lib/main.js');
+var Giza = require('../lib/main.js').Giza;
 var should = require('should');
 
 describe('Giza', function(){

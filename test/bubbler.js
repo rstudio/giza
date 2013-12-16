@@ -1,5 +1,6 @@
 var Bubbler = require('../lib/bubbler/bubbler');
 var should = require('should');
+var _ = require('underscore');
 var bub;
 
 var TYPE = 'TYPE';
