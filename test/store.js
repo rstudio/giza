@@ -129,6 +129,12 @@ describe('Store', function(){
 
       should(store.get('/abc', {recursive: false})).eql({a: 1});
     }),
+    it('should throw if no such path', function(){
+      (function(){
+        should(store.get('/abc', {recursive: false})).eql({a: 1});
+      }).should.throw(/path.*doesn\'t exist/);
+      
+    }),
     it('uses the default assembler for untyped paths', function(){
       var myStore = new Store({emit: bubblerSpy}, {
         '_': {
@@ -269,6 +275,17 @@ describe('Store', function(){
       store.delete(path);
       bubblerSpy.calledWith(path, 'pre-delete').should.be.true;
       bubblerSpy.calledWith(path, 'delete').should.be.true;
+    }),
+    it('should provide deleted object as params', function(){
+      var path = '/abc/def/ghi'
+      var obj = {username: 'jeff'};
+      store.save(path, obj, 'type1');
+      
+      bubblerSpy.reset();
+
+      store.delete(path);
+      bubblerSpy.calledWith(path, 'pre-delete', 'type1', obj).should.be.true;
+      bubblerSpy.calledWith(path, 'delete', 'type1', obj).should.be.true;
     }),
     it('should emit delete events on deleted children', function(){
       var path = '/abc/def/ghi'

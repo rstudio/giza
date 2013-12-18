@@ -39,6 +39,17 @@ describe('Bubbler', function(){
       bub.$eventBus.listeners('/abc').length.should.equal(0);
       bub.$bubbleBus.listeners('/abc').length.should.equal(0);
     }),
+    it ('Provides source for "delete" events', function(done){
+      var obj = {a:1};
+      bub.subscribe('/abc', function(){
+        arguments[0].should.equal('delete');
+        arguments[1].should.eql({path: '/abc/def', triggered: false, obj: obj, type: 'type1'});
+        arguments[2].should.equal('type1');
+        arguments[3].should.equal(obj);
+        done();
+      });
+      bub.emit('/abc/def', 'delete', 'type1', obj);  
+    }),
     it('Passed emitted arguments through', function(done){
       var obj = {a:1};
       bub.subscribe('/abc', function(){
