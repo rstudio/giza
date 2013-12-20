@@ -243,7 +243,6 @@ describe('Bubbler', function(){
       bubbler.unsubscribe(path, callback);
 
       _.size(bubbler.$callbacks).should.equal(0);
-
     })
   })
   
