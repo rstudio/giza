@@ -103,9 +103,8 @@ describe('Bubbler', function(){
       }, {filters: [{names: ['event1', 'event2']}]});
       bub.emit('/abc', 'event2');
     }),
-    it('pub/subs 100k targeted events in less than 200ms', function(done){
-      // this.timeout doesn't seem to be working. Implement our own.
-      var timeout = setTimeout(done, 200, new Error("Took too long."));
+    it('pub/subs 100k targeted events in less than 500ms', function(done){
+      this.timeout(500);
 
       var counter = 0;
       var obj = {a:1};
@@ -118,11 +117,6 @@ describe('Bubbler', function(){
       for (var i = 0; i < iterations; i++){
         bub.emit('/abc', obj);
       }
-
-      // We made it in time. Clear the timeout
-      setTimeout(function(){
-        clearTimeout(timeout);
-      }, 5);
 
       // Keep v8 from ever outsmarting this test and skipping over the loop.
       counter.should.equal(iterations);
@@ -187,8 +181,7 @@ describe('Bubbler', function(){
       bub.emit('/abc/def', 'event1', obj);
     }),
     it('pub/subs 100k (5-lvl) bubbled events in less than 500ms', function(done){
-      // this.timeout doesn't seem to be working. Implement our own.
-      var timeout = setTimeout(done, 500, new Error("Took too long."));
+      this.timeout(500);
 
       var counter = 0;
       var obj = {a:1};
@@ -201,11 +194,6 @@ describe('Bubbler', function(){
       for (var i = 0; i < iterations; i++){
         bub.emit('/abc/def/ghi/jkl', obj);
       }
-
-      // We made it in time. Clear the timeout
-      setTimeout(function(){
-        clearTimeout(timeout);
-      }, 5);
 
       // Keep v8 from ever outsmarting this test and skipping over the loop.
       counter.should.equal(iterations);
