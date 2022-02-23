@@ -1,5 +1,6 @@
 var Store = require('../lib/store/store');
 var Bubbler = require('../lib/bubbler/bubbler');
+var Map = require('../lib/core/map');
 var should = require('should');
 var sinon = require('sinon');
 var Passthrough = require('../lib/assemblers/passthrough');
@@ -8,9 +9,15 @@ var bub;
 var bubblerSpy = sinon.spy();
 var clearSpy = sinon.spy();
 
+// Turn an object to a Map--necessary because should.js's equality tests
+// want prototypes to match
+function asMap(obj) {
+  return Object.assign(new Map(), obj);
+}
+
 describe('Store', function(){
   beforeEach(function(){
-    bubblerSpy.reset();
+    bubblerSpy.resetHistory();
     store = new Store({emit: bubblerSpy, clearSubscriptions: clearSpy}, 
       {'_': new Passthrough()});    
   }),
@@ -24,7 +31,7 @@ describe('Store', function(){
       var path = '/app1/proc1/conn1'
       store.save(path, {username: 'jeff'});
 
-      bubblerSpy.reset();
+      bubblerSpy.resetHistory();
 
       store.save(path);      
       bubblerSpy.calledWith(path, 'pre-update').should.be.true;
@@ -41,7 +48,7 @@ describe('Store', function(){
       var path = '/app1/proc1/conn1'
       store.save(path, 'username', 'jeff');
       
-      bubblerSpy.reset();
+      bubblerSpy.resetHistory();
 
       store.save(path, {username: 'jeff'});
       bubblerSpy.called.should.be.true;
@@ -59,7 +66,7 @@ describe('Store', function(){
       var path = '/app1/proc1/conn1';
       store.save(path, {username: 'jeff'});
       
-      bubblerSpy.reset();
+      bubblerSpy.resetHistory();
 
       store.save(path, {username: 'jeff'});
       bubblerSpy.called.should.be.true;
@@ -76,7 +83,7 @@ describe('Store', function(){
       var obj = {username: 'jeff'};
       store.save(path, obj);
       
-      bubblerSpy.reset();
+      bubblerSpy.resetHistory();
 
       var obj2 = {user2: 'test'};
       store.save(path, obj2);
@@ -90,18 +97,18 @@ describe('Store', function(){
       store.save('/abc/a', {a: 1}, 'type1');
       store.save('/abc/b', {b: 2}, 'type2');
       store.save('/abc/c', {c: 3}, 'type3');
-      should(store.find({types: ['type2', 'type3']})).eql({
+      should(store.find({types: ['type2', 'type3']})).eql(asMap({
         '/abc/b' : {b:2},
         '/abc/c' : {c:3}
-      });
+      }));
     }),
     it('properly filters by single type', function(){
       store.save('/abc/a', {a: 1}, 'type1');
       store.save('/abc/b', {b: 2}, 'type2');
       store.save('/abc/c', {c: 3}, 'type3');
-      should(store.find({types: 'type2'})).eql({
+      should(store.find({types: 'type2'})).eql(asMap({
         '/abc/b' : {b:2}        
-      });
+      }));
     })
   }),
   describe('#get', function(){
@@ -270,7 +277,7 @@ describe('Store', function(){
       var path = '/abc/def/ghi'
       store.save(path, {username: 'jeff'});
       
-      bubblerSpy.reset();
+      bubblerSpy.resetHistory();
 
       store.delete(path);
       bubblerSpy.calledWith(path, 'pre-delete').should.be.true;
@@ -281,7 +288,7 @@ describe('Store', function(){
       var obj = {username: 'jeff'};
       store.save(path, obj, 'type1');
       
-      bubblerSpy.reset();
+      bubblerSpy.resetHistory();
 
       store.delete(path);
       bubblerSpy.calledWith(path, 'pre-delete', 'type1', obj).should.be.true;
@@ -291,7 +298,7 @@ describe('Store', function(){
       var path = '/abc/def/ghi'
       store.save(path, {username: 'jeff'});
       
-      bubblerSpy.reset();
+      bubblerSpy.resetHistory();
 
       store.delete('/abc');
       bubblerSpy.calledWith(path, 'pre-delete').should.be.true;
